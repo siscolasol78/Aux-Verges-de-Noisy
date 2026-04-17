@@ -2,88 +2,126 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventaire Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Stock Pro</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
+        /* --- CORE APPLE DESIGN LANGUAGE --- */
         :root {
-            --primary: #4361ee;
-            --secondary: #3f37c9;
-            --accent: #4cc9f0;
-            --success: #2ecc71;
-            --danger: #ef476f;
-            --bg: #f8f9fa;
-            --card: #ffffff;
-            --text: #2b2d42;
+            /* Couleurs Système iOS */
+            --system-blue: #007aff;
+            --system-green: #34c759;
+            --system-red: #ff3b30;
+            --system-gray: #8e8e93;
+            --system-background: #f2f2f7; /* Gris très clair iOS 13+ */
+            --system-card: #ffffff;
+            
+            /* Typographie */
+            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            
+            /* Effets */
+            --blur-background: rgba(255, 255, 255, 0.7);
+            --blur-effect: blur(20px) saturate(180%);
+            --shadow-card: 0 2px 8px rgba(0,0,0,0.04);
         }
 
+        /* Désactiver la sélection de texte et le zoom sur mobile pour un effet "App Native" */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        
         body { 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg); 
-            color: var(--text);
+            font-family: var(--font-stack); 
+            background-color: var(--system-background); 
+            color: #000; 
             margin: 0; 
             padding: 0;
-            padding-bottom: 120px; /* Espace pour la barre de total */
+            padding-bottom: 150px; /* Espace pour la barre de total flottante */
+            -webkit-font-smoothing: antialiased;
         }
 
-        .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-            border-bottom-left-radius: 25px;
-            border-bottom-right-radius: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        /* --- BARRE DE NAVIGATION (iOS STYLE) --- */
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background-color: var(--blur-background);
+            -webkit-backdrop-filter: var(--blur-effect);
+            backdrop-filter: var(--blur-effect);
+            border-bottom: 0.5px solid rgba(0,0,0,0.1); /* Bordure ultra-fine */
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        h1 { margin: 0; font-weight: 800; font-size: 1.8rem; letter-spacing: -1px; }
+        .nav-bar h1 { 
+            margin: 0; 
+            font-weight: 700; 
+            font-size: 1.1rem; 
+            letter-spacing: -0.5px;
+        }
+
+        /* Bouton Tout Effacer (Caché par défaut, apparaît quand on tape dans la recherche ou qu'il y a du stock) */
+        .btn-action-danger {
+            background: none;
+            border: none;
+            color: var(--system-red);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0;
+            transition: opacity 0.2s;
+        }
+        .btn-action-danger:active { opacity: 0.5; }
 
         .container { max-width: 600px; margin: auto; padding: 15px; }
 
-        /* Barre d'outils flottante */
-        .sticky-tools {
-            position: sticky;
-            top: 15px;
-            z-index: 100;
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
+        /* --- BARRE DE RECHERCHE (iOS STYLE) --- */
+        .search-container {
+            margin-bottom: 20px;
+            position: relative;
         }
-
+        
         .search-box { 
-            flex: 1; 
-            padding: 15px; 
+            width: 100%;
+            padding: 12px 15px 12px 40px; /* Espace pour l'icône loupe */
             border: none; 
-            border-radius: 15px; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-radius: 12px; 
+            background-color: rgba(142, 142, 147, 0.12); /* Gris recherche iOS */
             font-size: 1rem;
+            color: #000;
             outline: none;
+            transition: background-color 0.2s;
+        }
+        .search-box:focus { background-color: rgba(142, 142, 147, 0.2); }
+        .search-box::placeholder { color: #8e8e93; }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8e8e93;
+            font-size: 1rem;
+            pointer-events: none;
         }
 
-        .btn-clear-all { 
-            background: var(--danger); 
-            color: white; 
-            border: none; 
-            width: 50px;
-            border-radius: 15px; 
-            font-size: 1.2rem;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(239, 71, 111, 0.3);
-        }
-
-        /* Cartes Articles */
+        /* --- CARTES ARTICLES (iOS TABLE STYLE) --- */
         .item-card { 
-            background: var(--card);
-            border-radius: 18px;
+            background-color: var(--system-card);
+            border-radius: 12px;
             padding: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-card);
+            transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
         }
 
-        .item-card:active { transform: scale(0.98); }
+        /* Effet de pression quand on clique (micro-animation Apple) */
+        .item-card:active {
+            transform: scale(0.97);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+        }
 
         .item-header { 
             display: flex; 
@@ -92,16 +130,16 @@
             margin-bottom: 15px; 
         }
 
-        .item-name { font-weight: 600; font-size: 1.1rem; color: var(--text); }
-        .item-name i { font-style: italic; color: #666; font-weight: 400; }
+        .item-name { font-weight: 600; font-size: 1.1rem; letter-spacing: -0.3px; }
 
+        /* Section Prix */
         .price-section {
             display: flex;
             align-items: center;
-            gap: 10px;
-            background: #f1f3f5;
-            padding: 8px 12px;
-            border-radius: 10px;
+            gap: 5px;
+            background-color: #f2f2f7;
+            padding: 6px 12px;
+            border-radius: 8px;
         }
 
         .price-input {
@@ -110,118 +148,168 @@
             background: transparent;
             font-weight: 700;
             font-size: 1rem;
-            color: var(--primary);
+            color: var(--system-blue);
             text-align: right;
             outline: none;
+            font-feature-settings: "tnum"; /* Chiffres tubulaires pour alignement */
         }
+        .price-input::placeholder { color: rgba(0,122,255, 0.3); }
 
-        /* Grille de boutons */
+        /* --- GRILLE DE BOUTONS (iOS ACTION STYLE) --- */
         .qty-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
-            margin-top: 10px;
         }
 
         .qty-grid button {
             padding: 12px;
             border: none;
             border-radius: 10px;
-            background: #f8f9fa;
             font-weight: 600;
-            color: var(--text);
+            font-size: 1rem;
             cursor: pointer;
-            border: 1px solid #eee;
+            transition: background-color 0.1s;
         }
 
-        .btn-main-qty { background: #eef2ff !important; color: var(--primary) !important; border: 1px solid #c3dafe !important; }
+        /* Boutons principaux (+1, +1.5) */
+        .btn-main-qty { 
+            background-color: rgba(0, 122, 255, 0.1); 
+            color: var(--system-blue); 
+        }
+        .btn-main-qty:active { background-color: rgba(0, 122, 255, 0.2); }
 
+        /* Boutons secondaires (+2, +3, +5) */
+        .btn-secondary-qty {
+            background-color: #f2f2f7;
+            color: #000;
+        }
+        .btn-secondary-qty:active { background-color: #e5e5ea; }
+
+        /* Bouton Reset (0) */
+        .btn-reset-qty {
+            background-color: #f2f2f7;
+            color: var(--system-red);
+        }
+        .btn-reset-qty:active { background-color: rgba(255, 59, 48, 0.1); }
+
+        /* --- ZONE CONTRÔLE QUANTITÉ --- */
         .qty-control-area {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-top: 15px;
             padding-top: 15px;
-            border-top: 1px dashed #ddd;
+            border-top: 0.5px solid rgba(0,0,0,0.05);
         }
+
+        .qty-label { font-size: 0.85rem; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; }
 
         .qty-badge {
-            background: var(--primary);
-            color: white;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-weight: 800;
-            font-size: 1.1rem;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--system-blue);
+            font-feature-settings: "tnum";
         }
 
-        /* Barre de total fixe */
+        /* --- BARRE DE TOTAL FLOTTANTE (iOS DOCK STYLE) --- */
         .footer-total {
             position: fixed;
             bottom: 20px;
             left: 20px;
             right: 20px;
-            background: var(--text);
+            background-color: rgba(0, 0, 0, 0.85); /* Noir iOS Dock */
+            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(15px);
             color: white;
             padding: 20px;
-            border-radius: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 1000;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 2000;
         }
 
-        .total-amount { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+        .total-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .total-label { opacity: 0.7; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .total-amount { font-size: 1.7rem; font-weight: 800; color: #fff; letter-spacing: -0.5px; font-feature-settings: "tnum"; }
 
+        /* Groupe Boutons Partage */
         .share-group {
             display: flex;
-            gap: 8px;
-            margin-top: 12px;
+            gap: 10px;
         }
 
         .btn-share {
             flex: 1;
-            padding: 12px;
+            padding: 14px;
             border: none;
             border-radius: 12px;
             font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
-            font-size: 0.9rem;
+            transition: opacity 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
+        .btn-share:active { opacity: 0.7; }
 
-        .btn-full { background: var(--primary); color: white; }
-        .btn-light { background: rgba(255,255,255,0.1); color: white; }
+        .btn-full { background-color: var(--system-blue); color: white; }
+        .btn-light { background-color: rgba(255,255,255,0.15); color: white; }
 
+        /* --- TITRES DE SECTION (iOS GROUPED TABLE STYLE) --- */
         .section-title {
-            font-weight: 800;
+            font-weight: 400;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #adb5bd;
-            margin: 30px 10px 15px;
-            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            color: #6d6d72; /* Gris titre section iOS */
+            margin: 30px 15px 10px;
+            font-size: 0.85rem;
         }
+
+        /* Micro-animation de chargement */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .item-card { animation: fadeIn 0.3s ease-out; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h1>📦 Gestion de Stock</h1>
+<div class="nav-bar">
+    <h1><i class="fa-solid fa-box-archive" style="color:var(--system-blue); margin-right:5px;">
+    </i>Stock Pro</h1>
+    <button class="btn-action-danger" onclick="resetEverything()">Tout effacer</button>
 </div>
 
 <div class="container">
-    <div class="sticky-tools">
-        <input type="text" id="search" class="search-box" placeholder="🔍 Rechercher un produit..." onkeyup="filterItems()">
-        <button class="btn-clear-all" onclick="resetEverything()" title="Tout effacer">🔄</button>
+    <div class="search-container">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="search" class="search-box" placeholder="Rechercher un produit..." onkeyup="filterItems()">
     </div>
 
     <div id="item-list"></div>
 </div>
 
 <div class="footer-total">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="opacity: 0.8; font-weight: 600;">TOTAL ESTIMÉ</span>
+    <div class="total-header">
+        <span class="total-label">Total Estimé</span>
         <span class="total-amount"><span id="grand-total">0.00</span> €</span>
     </div>
     <div class="share-group">
-        <button class="btn-share btn-full" onclick="share('all')">Partager Panier</button>
-        <button class="btn-share btn-light" onclick="share('prices')">Prix Seuls</button>
+        <button class="btn-share btn-full" onclick="share('all')">
+            <i class="fa-solid fa-square-share-nodes"></i>Partager Panier
+        </button>
+        <button class="btn-share btn-light" onclick="share('prices')">
+            <i class="fa-solid fa-list-ul"></i>Prix Seuls
+        </button>
     </div>
 </div>
 
@@ -236,7 +324,7 @@
 
     function init() {
         const listEl = document.getElementById('item-list');
-        articles.forEach(name => {
+        articles.forEach((name, index) => {
             if(name === "TITRE_HERBES") {
                 const h = document.createElement('div');
                 h.className = 'section-title';
@@ -248,24 +336,27 @@
             data[name] = { qty: 0, price: 0 };
             const card = document.createElement('div');
             card.className = 'item-card';
+            // Animation décalée pour l'effet d'apparition
+            card.style.animationDelay = `${index * 20}ms`; 
+
             card.innerHTML = `
                 <div class="item-header">
                     <span class="item-name">${name}</span>
                     <div class="price-section">
-                        <input type="number" step="0.01" class="price-input" id="p-${name}" placeholder="0.00" oninput="updatePrice('${name}', this.value)">
-                        <span style="font-weight:bold; color:#999">€</span>
+                        <input type="number" step="0.01" class="price-input" id="p-${name}" placeholder="0.00" oninput="updatePrice('${name}', this.value)" pattern="[0-9]*" inputmode="decimal">
+                        <span style="font-weight:600; color:#8e8e93; font-size:0.9rem">€</span>
                     </div>
                 </div>
                 <div class="qty-grid">
                     <button class="btn-main-qty" onclick="updateQty('${name}', 1)">+1</button>
                     <button class="btn-main-qty" onclick="updateQty('${name}', 1.5)">+1.5</button>
-                    <button onclick="updateQty('${name}', 2)">+2</button>
-                    <button onclick="updateQty('${name}', 3)">+3</button>
-                    <button onclick="updateQty('${name}', 5)">+5</button>
-                    <button style="color:var(--danger)" onclick="updateQty('${name}', 0, true)">0</button>
+                    <button class="btn-secondary-qty" onclick="updateQty('${name}', 2)">+2</button>
+                    <button class="btn-secondary-qty" onclick="updateQty('${name}', 3)">+3</button>
+                    <button class="btn-secondary-qty" onclick="updateQty('${name}', 5)">+5</button>
+                    <button class="btn-reset-qty" onclick="updateQty('${name}', 0, true)">0</button>
                 </div>
                 <div class="qty-control-area">
-                    <span style="font-size:0.8rem; font-weight:700; color:#adb5bd">QUANTITÉ</span>
+                    <span class="qty-label">Quantité</span>
                     <span class="qty-badge" id="q-${name}">0</span>
                 </div>
             `;
@@ -276,7 +367,13 @@
     function updateQty(name, val, reset = false) {
         if(reset) data[name].qty = 0;
         else data[name].qty += val;
-        document.getElementById(`q-${name}`).innerText = data[name].qty;
+        // Animation subtile sur le badge quand la quantité change
+        const badge = document.getElementById(`q-${name}`);
+        badge.innerText = data[name].qty;
+        badge.style.transform = "scale(1.2)";
+        badge.style.transition = "transform 0.1s ease-out";
+        setTimeout(() => badge.style.transform = "scale(1)", 100);
+        
         calculateTotal();
     }
 
@@ -294,7 +391,8 @@
     }
 
     function resetEverything() {
-        if(confirm("Effacer tout l'inventaire ?")) {
+        // Confirmation native iOS style
+        if(confirm("Voulez-vous vraiment effacer TOUT l'inventaire (quantités et prix) ?")) {
             for (let name in data) {
                 data[name].qty = 0;
                 data[name].price = 0;
@@ -316,7 +414,7 @@
     }
 
     function share(type) {
-        let text = type === 'all' ? "🛒 MON INVENTAIRE\n" : "💰 TARIFS DU JOUR\n";
+        let text = type === 'all' ? "🛒 INVENTAIRE DU JOUR\n" : "💰 TARIFS UNITAIRES\n";
         let hasData = false;
         for (let item in data) {
             if (data[item].qty > 0 || data[item].price > 0) {
@@ -333,11 +431,13 @@
         if (type === 'all') text += `\n\n💵 TOTAL : ${document.getElementById('grand-total').innerText} €`;
         if (!hasData) return alert("Rien à partager !");
         
+        // Feuille de partage native iOS
         if (navigator.share) {
-            navigator.share({ title: 'Inventaire', text: text });
+            navigator.share({ title: 'Inventaire Pro', text: text });
         } else {
+            // Fallback pour navigateurs web de bureau
             navigator.clipboard.writeText(text);
-            alert("Copié dans le presse-papier !");
+            alert("Récapitulatif copié dans le presse-papier !");
         }
     }
 
