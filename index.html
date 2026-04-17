@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventaire & Prix</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;
+            --bg: #f4f7f6;
+        }
+        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 15px; border-radius: 12px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: var(--primary); font-size: 1.5rem; }
+        
+        .search-box { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+
+        .item-row { 
+            display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid #eee;
+        }
+        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .item-name { font-style: italic; font-weight: bold; color: var(--primary); }
+        
+        .controls { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+        button { 
+            border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;
+            background: #e0e0e0; transition: 0.2s;
+        }
+        button:active { transform: scale(0.95); }
+        .btn-qty { background: var(--accent); color: white; font-weight: bold; }
+        .btn-reset { background: #e74c3c; color: white; padding: 5px 8px; font-size: 0.8rem; }
+        
+        .price-input { width: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; text-align: center; }
+        
+        .totals-bar { 
+            position: sticky; bottom: 0; background: var(--primary); color: white; 
+            padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;
+        }
+        .share-btns { display: flex; gap: 10px; margin-top: 10px; justify-content: center; }
+        .btn-share { background: #3498db; color: white; padding: 10px 20px; border-radius: 20px; }
+        
+        .qty-display { font-weight: bold; color: var(--accent); min-width: 40px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📝 Liste & Comptage</h1>
+    <input type="text" id="search" class="search-box" placeholder="Rechercher un article..." onkeyup="filterItems()">
+    
+    <div id="item-list"></div>
+
+    <div class="totals-bar">
+        <div>TOTAL GLOBAL : <span id="grand-total">0.00</span> €</div>
+        <div class="share-btns">
+            <button class="btn-share" onclick="share('all')">Partager Total</button>
+            <button class="btn-share" style="background:#8e44ad" onclick="share('prices')">Liste Prix Seuls</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const articles = [
+        "AIL", "ANANAS à couper", "ANANAS p de sucre", "ANANAS victoria", "ARTICHAUT artichaut 2", "ARTICHAUT poivrade", "AUBERGINE", "AUBERGINE longue", "AVOCAT", "avocat 2", "BANANE", "BETTERAVE", "Blette", "BROCOLI", "brocoll 2", "BUTTERNUT", "CAROTTE", "CAROTTE bt", "CAROTTE SABLE", "Celeri", "CELERI rave", "CERISE", "CH blancs rouges", "CH bruxelles", "CH fleurs", "CH frisé", "CH pointu", "CHAMPI", "CHAMPI blancs", "CHAMPI bruns", "CHAMPI trompette", "CITRON", "CITRON bergamote", "CITRON BIO", "CITRON VERT", "CLEM 2", "CLEM CORSE", "CLEM SOCU", "COCO PLAT", "CONCOMB", "concombre 2", "COURGETTE", "COURGETTE blanche", "COURGETTE ronde", "ECHALOTE", "ENDIVE", "endive 2", "EPINARD", "FENOUIL", "FEVE", "FIGUE", "FRAISE BELGE", "FRAISE CHARLOTTE", "FRAISE DREAM", "FRAISE GARIGUETTE", "FRAISE MAGNUM", "FRAISE patissier", "FRAISE promo", "FRAMBOISE", "framboise 2", "FRESINETTE", "FS ABRICOT", "FS DATTES", "FS PRUNEAUX", "GINGEMBRE", "GRENADE", "GRENADILLE", "HARICOT barquette", "HARICOT ex", "HARICOT France", "KAKI DUR", "KIWI", "KIWIGOLD", "LITCHEE", "litchee 2", "MACHE", "MANGOUSTAN", "MANGUE", "mangue 2", "MARRON", "MELON", "MESCLUM", "MINI conc", "MINI POIVRON", "MURE", "MYRTILLE", "mvrtille 2", "NAVET", "NAVET bt", "NOIX", "OIGNON", "OIGNON bi", "OIGNON Roscoff", "OIGNON rouge", "Orange de Sicile", "Orange jus", "Orange SOCU", "Orange table", "Orange Tarocco", "PANAIS", "Pamplemousse", "Passion", "Passion Gold", "PATATE DOUCE", "PDT charlotte", "PDT grenaille", "PDT mona", "PETIT POIS", "PETIT POIS barquette", "POIRE 2", "Poire Comice", "Poire Conférence", "POIREAU", "POIV jaune orange", "POIV rouge", "POIV vert", "POMME 2", "POMME BIO", "Pomme Boskoop", "Pomme Canada", "Pomme Chanteclerc", "Pomme Clochard", "Pomme FUJI", "Pomme GALA", "Pomme Golden", "Pomme Granny", "Pomme Patte de Loup", "Pomme Pink lady", "Pomme ROCKIT", "Pomme Rubinette", "POTIMARRON", "POTIRON", "RADIS NOIR", "RADIS ROSE", "RADIS ROUGE", "Raisin sans pépins Blanc", "Raisin sans pépins rose", "RHUBARBE", "ROMANESCO", "Salade Batavia", "Salade Batavia X 12", "Salade Feuille de chêne", "Salade Frisée", "Salade Laitue", "Salade Rougette", "Salade Scarole", "Sucrine", "Tomate 2", "Tomate Cerise", "Tomate Jouno", "Tomate Jouno vrac", "--- HERBES ---", "ANETH", "Basilic", "Ciboulette", "Coriandre", "Estragon", "Menthe", "Oseille", "PERSIL", "Thym laurier"
+    ];
+
+    const data = {};
+
+    function init() {
+        const listEl = document.getElementById('item-list');
+        articles.forEach(name => {
+            data[name] = { qty: 0, price: 0 };
+            
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <div class="item-header">
+                    <span class="item-name">${name}</span>
+                    <button class="btn-reset" onclick="updateQty('${name}', 0, true)">Reset</button>
+                </div>
+                <div class="controls">
+                    <button class="btn-qty" onclick="updateQty('${name}', 1)">+1</button>
+                    <button class="btn-qty" onclick="updateQty('${name}', 1.5)">+1.5</button>
+                    <button onclick="updateQty('${name}', 2)">+2</button>
+                    <button onclick="updateQty('${name}', 3)">+3</button>
+                    <button onclick="updateQty('${name}', 4)">+4</button>
+                    <button onclick="updateQty('${name}', 5)">+5</button>
+                    <span class="qty-display" id="qty-${name}">0</span>
+                    <input type="number" step="0.01" class="price-input" placeholder="Prix €" oninput="updatePrice('${name}', this.value)">
+                </div>
+            `;
+            listEl.appendChild(row);
+        });
+    }
+
+    function updateQty(name, val, reset = false) {
+        if(reset) data[name].qty = 0;
+        else data[name].qty += val;
+        document.getElementById(`qty-${name}`).innerText = data[name].qty;
+        calculateTotal();
+    }
+
+    function updatePrice(name, val) {
+        data[name].price = parseFloat(val) || 0;
+        calculateTotal();
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        for (let item in data) {
+            total += data[item].qty * data[item].price;
+        }
+        document.getElementById('grand-total').innerText = total.toFixed(2);
+    }
+
+    function filterItems() {
+        let query = document.getElementById('search').value.toLowerCase();
+        let rows = document.getElementsByClassName('item-row');
+        Array.from(rows).forEach(row => {
+            let name = row.querySelector('.item-name').innerText.toLowerCase();
+            row.style.display = name.includes(query) ? 'flex' : 'none';
+        });
+    }
+
+    function share(type) {
+        let text = type === 'all' ? "🛒 RECAPITULATIF TOTAL\n\n" : "💰 LISTE DES PRIX\n\n";
+        let hasData = false;
+
+        for (let item in data) {
+            if (data[item].qty > 0 || data[item].price > 0) {
+                if (type === 'all' && data[item].qty > 0) {
+                    let st = data[item].qty * data[item].price;
+                    text += `* ${item} : ${data[item].qty} x ${data[item].price}€ = ${st.toFixed(2)}€\n`;
+                    hasData = true;
+                } else if (type === 'prices' && data[item].price > 0) {
+                    text += `* ${item} : ${data[item].price}€\n`;
+                    hasData = true;
+                }
+            }
+        }
+
+        if (type === 'all') text += `\nTOTAL GLOBAL : ${document.getElementById('grand-total').innerText} €`;
+
+        if (!hasData) return alert("Rien à partager !");
+
+        if (navigator.share) {
+            navigator.share({ title: 'Mon Inventaire', text: text });
+        } else {
+            alert("Copié dans le presse-papier :\n\n" + text);
+        }
+    }
+
+    init();
+</script>
+
+</body>
+</html>
