@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Achats Vergers de Noisy</title>
+    <title>Vergers de Noisy - Inventaire, achats et prix</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -11,7 +11,7 @@
         :root {
             --brand-green: #2d6a4f; /* Vert Verger */
             --brand-light-green: #d8f3dc;
-            --gold: #b79ced; /* Une touche d'élégance */
+            --gold: #b79ced;
             --ios-bg: #f2f2f7;
             --ios-card: #ffffff;
             --system-red: #ff3b30;
@@ -37,8 +37,6 @@
             text-align: center;
             border-bottom: 0.5px solid rgba(0,0,0,0.1);
         }
-
-        .header img { width: 50px; margin-bottom: 10px; } /* Placeholder pour un logo */
         
         .header h1 { 
             margin: 0; 
@@ -194,14 +192,14 @@
         .btn-group { display: flex; gap: 10px; }
         
         .btn-main {
-            flex: 1;
+            flex: 1.2;
             background: var(--brand-green);
             color: white;
             border: none;
             padding: 15px;
             border-radius: 14px;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -209,13 +207,22 @@
         }
 
         .btn-sec {
-            background: rgba(255,255,255,0.1);
+            flex: 1;
+            background: rgba(255,255,255,0.15);
             color: white;
             border: none;
             padding: 15px;
             border-radius: 14px;
             font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
         }
+
+        .btn-sec:active { background: rgba(255,255,255,0.25); }
 
         .section-title {
             margin: 35px 10px 15px;
@@ -232,7 +239,7 @@
 <div class="header">
     <i class="fa-solid fa-leaf" style="color:var(--brand-green); font-size: 2rem; margin-bottom: 10px;"></i>
     <h1>Vergers de Noisy</h1>
-    <p>Inventaire & Achats</p>
+    <p>Inventaire, Achats et Prix</p>
 </div>
 
 <div class="nav-tools">
@@ -254,10 +261,10 @@
     </div>
     <div class="btn-group">
         <button class="btn-main" onclick="share('all')">
-            <i class="fa-solid fa-paper-plane"></i> Partager Panier
+            <i class="fa-solid fa-cart-shopping"></i> Panier
         </button>
         <button class="btn-sec" onclick="share('prices')">
-            Prix
+            <i class="fa-solid fa-tag"></i> Partager Prix
         </button>
     </div>
 </div>
@@ -354,28 +361,31 @@
     }
 
     function share(type) {
-        let text = type === 'all' ? "🍏 ACHATS VERGERS DE NOISY\n" : "💰 PRIX UNITAIRES\n";
+        let text = type === 'all' ? "🍏 ACHATS VERGERS DE NOISY\n" : "💰 PRIX DU JOUR\n";
         let hasData = false;
+        
         for (let item in data) {
-            if (data[item].qty > 0 || data[item].price > 0) {
-                if (type === 'all' && data[item].qty > 0) {
-                    let st = data[item].qty * data[item].price;
-                    text += `\n• ${item} : ${data[item].qty} x ${data[item].price}€ = ${st.toFixed(2)}€`;
-                    hasData = true;
-                } else if (type === 'prices' && data[item].price > 0) {
-                    text += `\n• ${item} : ${data[item].price}€`;
-                    hasData = true;
-                }
+            // Logique de partage PANIER COMPLET
+            if (type === 'all' && data[item].qty > 0) {
+                let st = data[item].qty * data[item].price;
+                text += `\n• ${item} : ${data[item].qty} x ${data[item].price}€ = ${st.toFixed(2)}€`;
+                hasData = true;
+            } 
+            // Logique de partage PRIX SEULS
+            else if (type === 'prices' && data[item].price > 0) {
+                text += `\n• ${item} : ${data[item].price}€`;
+                hasData = true;
             }
         }
+        
         if (type === 'all') text += `\n\n💵 TOTAL ESTIMÉ : ${document.getElementById('grand-total').innerText} €`;
-        if (!hasData) return alert("Rien à partager !");
+        if (!hasData) return alert("Rien à partager ! Remplissez au moins un champ.");
         
         if (navigator.share) {
             navigator.share({ title: 'Achats Noisy', text: text });
         } else {
             navigator.clipboard.writeText(text);
-            alert("Récapitulatif copié !");
+            alert("Récapitulatif copié dans le presse-papier !");
         }
     }
 
