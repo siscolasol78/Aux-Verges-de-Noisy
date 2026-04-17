@@ -3,65 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventaire & Prix</title>
+    <title>Inventaire Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2c3e50;
-            --accent: #27ae60;
-            --bg: #f4f7f6;
-            --danger: #e74c3c;
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --success: #2ecc71;
+            --danger: #ef476f;
+            --bg: #f8f9fa;
+            --card: #ffffff;
+            --text: #2b2d42;
         }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: var(--primary); font-size: 1.5rem; }
-        
-        .header-tools { display: flex; gap: 10px; margin-bottom: 20px; }
-        .search-box { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
-        .btn-clear-all { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        .item-row { display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .item-name { font-style: italic; font-weight: bold; color: var(--primary); }
-        
-        .controls { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
-        button { border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; background: #e0e0e0; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
-        .btn-qty { background: var(--accent); color: white; font-weight: bold; }
-        .btn-reset { background: #e74c3c; color: white; padding: 5px 8px; font-size: 0.8rem; }
-        
-        .price-input { width: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; text-align: center; }
-        
-        .totals-bar { position: sticky; bottom: 0; background: var(--primary); color: white; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; }
-        .share-btns { display: flex; gap: 10px; margin-top: 10px; justify-content: center; }
-        .btn-share { background: #3498db; color: white; padding: 10px 20px; border-radius: 20px; }
-        
-        .qty-display { font-weight: bold; color: var(--accent); min-width: 40px; text-align: center; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            color: var(--text);
+            margin: 0; 
+            padding: 0;
+            padding-bottom: 120px; /* Espace pour la barre de total */
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 { margin: 0; font-weight: 800; font-size: 1.8rem; letter-spacing: -1px; }
+
+        .container { max-width: 600px; margin: auto; padding: 15px; }
+
+        /* Barre d'outils flottante */
+        .sticky-tools {
+            position: sticky;
+            top: 15px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .search-box { 
+            flex: 1; 
+            padding: 15px; 
+            border: none; 
+            border-radius: 15px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .btn-clear-all { 
+            background: var(--danger); 
+            color: white; 
+            border: none; 
+            width: 50px;
+            border-radius: 15px; 
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(239, 71, 111, 0.3);
+        }
+
+        /* Cartes Articles */
+        .item-card { 
+            background: var(--card);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+
+        .item-card:active { transform: scale(0.98); }
+
+        .item-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 15px; 
+        }
+
+        .item-name { font-weight: 600; font-size: 1.1rem; color: var(--text); }
+        .item-name i { font-style: italic; color: #666; font-weight: 400; }
+
+        .price-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f3f5;
+            padding: 8px 12px;
+            border-radius: 10px;
+        }
+
+        .price-input {
+            width: 70px;
+            border: none;
+            background: transparent;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--primary);
+            text-align: right;
+            outline: none;
+        }
+
+        /* Grille de boutons */
+        .qty-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .qty-grid button {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            border: 1px solid #eee;
+        }
+
+        .btn-main-qty { background: #eef2ff !important; color: var(--primary) !important; border: 1px solid #c3dafe !important; }
+
+        .qty-control-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #ddd;
+        }
+
+        .qty-badge {
+            background: var(--primary);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        /* Barre de total fixe */
+        .footer-total {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: var(--text);
+            color: white;
+            padding: 20px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .total-amount { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+
+        .share-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn-share {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-full { background: var(--primary); color: white; }
+        .btn-light { background: rgba(255,255,255,0.1); color: white; }
+
+        .section-title {
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #adb5bd;
+            margin: 30px 10px 15px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>📝 Liste & Comptage</h1>
-    
-    <div class="header-tools">
-        <input type="text" id="search" class="search-box" placeholder="Rechercher..." onkeyup="filterItems()">
-        <button class="btn-clear-all" onclick="resetEverything()">TOUT EFFACER</button>
-    </div>
-    
-    <div id="item-list"></div>
+<div class="header">
+    <h1>📦 Gestion de Stock</h1>
+</div>
 
-    <div class="totals-bar">
-        <div>TOTAL GLOBAL : <span id="grand-total">0.00</span> €</div>
-        <div class="share-btns">
-            <button class="btn-share" onclick="share('all')">Partager Total</button>
-            <button class="btn-share" style="background:#8e44ad" onclick="share('prices')">Liste Prix Seuls</button>
-        </div>
+<div class="container">
+    <div class="sticky-tools">
+        <input type="text" id="search" class="search-box" placeholder="🔍 Rechercher un produit..." onkeyup="filterItems()">
+        <button class="btn-clear-all" onclick="resetEverything()" title="Tout effacer">🔄</button>
+    </div>
+
+    <div id="item-list"></div>
+</div>
+
+<div class="footer-total">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="opacity: 0.8; font-weight: 600;">TOTAL ESTIMÉ</span>
+        <span class="total-amount"><span id="grand-total">0.00</span> €</span>
+    </div>
+    <div class="share-group">
+        <button class="btn-share btn-full" onclick="share('all')">Partager Panier</button>
+        <button class="btn-share btn-light" onclick="share('prices')">Prix Seuls</button>
     </div>
 </div>
 
 <script>
     const articles = [
-        "AIL", "ANANAS à couper", "ANANAS p de sucre", "ANANAS victoria", "ARTICHAUT artichaut 2", "ARTICHAUT poivrade", "AUBERGINE", "AUBERGINE longue", "AVOCAT", "avocat 2", "BANANE", "BETTERAVE", "Blette", "BROCOLI", "brocoll 2", "BUTTERNUT", "CAROTTE", "CAROTTE bt", "CAROTTE SABLE", "Celeri", "CELERI rave", "CERISE", "CH blancs rouges", "CH bruxelles", "CH fleurs", "CH frisé", "CH pointu", "CHAMPI", "CHAMPI blancs", "CHAMPI bruns", "CHAMPI trompette", "CITRON", "CITRON bergamote", "CITRON BIO", "CITRON VERT", "CLEM 2", "CLEM CORSE", "CLEM SOCU", "COCO PLAT", "CONCOMB", "concombre 2", "COURGETTE", "COURGETTE blanche", "COURGETTE ronde", "ECHALOTE", "ENDIVE", "endive 2", "EPINARD", "FENOUIL", "FEVE", "FIGUE", "FRAISE BELGE", "FRAISE CHARLOTTE", "FRAISE DREAM", "FRAISE GARIGUETTE", "FRAISE MAGNUM", "FRAISE patissier", "FRAISE promo", "FRAMBOISE", "framboise 2", "FRESINETTE", "FS ABRICOT", "FS DATTES", "FS PRUNEAUX", "GINGEMBRE", "GRENADE", "GRENADILLE", "HARICOT barquette", "HARICOT ex", "HARICOT France", "KAKI DUR", "KIWI", "KIWIGOLD", "LITCHEE", "litchee 2", "MACHE", "MANGOUSTAN", "MANGUE", "mangue 2", "MARRON", "MELON", "MESCLUM", "MINI conc", "MINI POIVRON", "MURE", "MYRTILLE", "mvrtille 2", "NAVET", "NAVET bt", "NOIX", "OIGNON", "OIGNON bi", "OIGNON Roscoff", "OIGNON rouge", "Orange de Sicile", "Orange jus", "Orange SOCU", "Orange table", "Orange Tarocco", "PANAIS", "Pamplemousse", "Passion", "Passion Gold", "PATATE DOUCE", "PDT charlotte", "PDT grenaille", "PDT mona", "PETIT POIS", "PETIT POIS barquette", "POIRE 2", "Poire Comice", "Poire Conférence", "POIREAU", "POIV jaune orange", "POIV rouge", "POIV vert", "POMME 2", "POMME BIO", "Pomme Boskoop", "Pomme Canada", "Pomme Chanteclerc", "Pomme Clochard", "Pomme FUJI", "Pomme GALA", "Pomme Golden", "Pomme Granny", "Pomme Patte de Loup", "Pomme Pink lady", "Pomme ROCKIT", "Pomme Rubinette", "POTIMARRON", "POTIRON", "RADIS NOIR", "RADIS ROSE", "RADIS ROUGE", "Raisin sans pépins Blanc", "Raisin sans pépins rose", "RHUBARBE", "ROMANESCO", "Salade Batavia", "Salade Batavia X 12", "Salade Feuille de chêne", "Salade Frisée", "Salade Laitue", "Salade Rougette", "Salade Scarole", "Sucrine", "Tomate 2", "Tomate Cerise", "Tomate Jouno", "Tomate Jouno vrac", "--- HERBES ---", "ANETH", "Basilic", "Ciboulette", "Coriandre", "Estragon", "Menthe", "Oseille", "PERSIL", "Thym laurier"
+        "AIL", "ANANAS à couper", "ANANAS p de sucre", "ANANAS victoria", "ARTICHAUT artichaut 2", "ARTICHAUT poivrade", "AUBERGINE", "AUBERGINE longue", "AVOCAT", "avocat 2", "BANANE", "BETTERAVE", "Blette", "BROCOLI", "brocoll 2", "BUTTERNUT", "CAROTTE", "CAROTTE bt", "CAROTTE SABLE", "Celeri", "CELERI rave", "CERISE", "CH blancs rouges", "CH bruxelles", "CH fleurs", "CH frisé", "CH pointu", "CHAMPI", "CHAMPI blancs", "CHAMPI bruns", "CHAMPI trompette", "CITRON", "CITRON bergamote", "CITRON BIO", "CITRON VERT", "CLEM 2", "CLEM CORSE", "CLEM SOCU", "COCO PLAT", "CONCOMB", "concombre 2", "COURGETTE", "COURGETTE blanche", "COURGETTE ronde", "ECHALOTE", "ENDIVE", "endive 2", "EPINARD", "FENOUIL", "FEVE", "FIGUE", "FRAISE BELGE", "FRAISE CHARLOTTE", "FRAISE DREAM", "FRAISE GARIGUETTE", "FRAISE MAGNUM", "FRAISE patissier", "FRAISE promo", "FRAMBOISE", "framboise 2", "FRESINETTE", "FS ABRICOT", "FS DATTES", "FS PRUNEAUX", "GINGEMBRE", "GRENADE", "GRENADILLE", "HARICOT barquette", "HARICOT ex", "HARICOT France", "KAKI DUR", "KIWI", "KIWIGOLD", "LITCHEE", "litchee 2", "MACHE", "MANGOUSTAN", "MANGUE", "mangue 2", "MARRON", "MELON", "MESCLUM", "MINI conc", "MINI POIVRON", "MURE", "MYRTILLE", "mvrtille 2", "NAVET", "NAVET bt", "NOIX", "OIGNON", "OIGNON bi", "OIGNON Roscoff", "OIGNON rouge", "Orange de Sicile", "Orange jus", "Orange SOCU", "Orange table", "Orange Tarocco", "PANAIS", "Pamplemousse", "Passion", "Passion Gold", "PATATE DOUCE", "PDT charlotte", "PDT grenaille", "PDT mona", "PETIT POIS", "PETIT POIS barquette", "POIRE 2", "Poire Comice", "Poire Conférence", "POIREAU", "POIV jaune orange", "POIV rouge", "POIV vert", "POMME 2", "POMME BIO", "Pomme Boskoop", "Pomme Canada", "Pomme Chanteclerc", "Pomme Clochard", "Pomme FUJI", "Pomme GALA", "Pomme Golden", "Pomme Granny", "Pomme Patte de Loup", "Pomme Pink lady", "Pomme ROCKIT", "Pomme Rubinette", "POTIMARRON", "POTIRON", "RADIS NOIR", "RADIS ROSE", "RADIS ROUGE", "Raisin sans pépins Blanc", "Raisin sans pépins rose", "RHUBARBE", "ROMANESCO", "Salade Batavia", "Salade Batavia X 12", "Salade Feuille de chêne", "Salade Frisée", "Salade Laitue", "Salade Rougette", "Salade Scarole", "Sucrine", "Tomate 2", "Tomate Cerise", "Tomate Jouno", "Tomate Jouno vrac",
+        "TITRE_HERBES",
+        "ANETH", "Basilic", "Ciboulette", "Coriandre", "Estragon", "Menthe", "Oseille", "PERSIL", "Thym laurier"
     ];
 
     const data = {};
@@ -69,52 +237,52 @@
     function init() {
         const listEl = document.getElementById('item-list');
         articles.forEach(name => {
+            if(name === "TITRE_HERBES") {
+                const h = document.createElement('div');
+                h.className = 'section-title';
+                h.innerText = "🌿 Aromates & Herbes";
+                listEl.appendChild(h);
+                return;
+            }
+
             data[name] = { qty: 0, price: 0 };
-            
-            const row = document.createElement('div');
-            row.className = 'item-row';
-            row.innerHTML = `
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.innerHTML = `
                 <div class="item-header">
                     <span class="item-name">${name}</span>
-                    <button class="btn-reset" onclick="updateQty('${name}', 0, true)">Reset Qty</button>
+                    <div class="price-section">
+                        <input type="number" step="0.01" class="price-input" id="p-${name}" placeholder="0.00" oninput="updatePrice('${name}', this.value)">
+                        <span style="font-weight:bold; color:#999">€</span>
+                    </div>
                 </div>
-                <div class="controls">
-                    <button class="btn-qty" onclick="updateQty('${name}', 1)">+1</button>
-                    <button class="btn-qty" onclick="updateQty('${name}', 1.5)">+1.5</button>
+                <div class="qty-grid">
+                    <button class="btn-main-qty" onclick="updateQty('${name}', 1)">+1</button>
+                    <button class="btn-main-qty" onclick="updateQty('${name}', 1.5)">+1.5</button>
                     <button onclick="updateQty('${name}', 2)">+2</button>
                     <button onclick="updateQty('${name}', 3)">+3</button>
-                    <button onclick="updateQty('${name}', 4)">+4</button>
                     <button onclick="updateQty('${name}', 5)">+5</button>
-                    <span class="qty-display" id="qty-${name}">0</span>
-                    <input type="number" step="0.01" class="price-input" id="price-${name}" placeholder="Prix €" oninput="updatePrice('${name}', this.value)">
+                    <button style="color:var(--danger)" onclick="updateQty('${name}', 0, true)">0</button>
+                </div>
+                <div class="qty-control-area">
+                    <span style="font-size:0.8rem; font-weight:700; color:#adb5bd">QUANTITÉ</span>
+                    <span class="qty-badge" id="q-${name}">0</span>
                 </div>
             `;
-            listEl.appendChild(row);
+            listEl.appendChild(card);
         });
     }
 
     function updateQty(name, val, reset = false) {
         if(reset) data[name].qty = 0;
         else data[name].qty += val;
-        document.getElementById(`qty-${name}`).innerText = data[name].qty;
+        document.getElementById(`q-${name}`).innerText = data[name].qty;
         calculateTotal();
     }
 
     function updatePrice(name, val) {
         data[name].price = parseFloat(val) || 0;
         calculateTotal();
-    }
-
-    function resetEverything() {
-        if(confirm("Voulez-vous vraiment remettre à zéro toutes les quantités et tous les prix ?")) {
-            for (let name in data) {
-                data[name].qty = 0;
-                data[name].price = 0;
-                document.getElementById(`qty-${name}`).innerText = "0";
-                document.getElementById(`price-${name}`).value = "";
-            }
-            calculateTotal();
-        }
     }
 
     function calculateTotal() {
@@ -125,37 +293,51 @@
         document.getElementById('grand-total').innerText = total.toFixed(2);
     }
 
+    function resetEverything() {
+        if(confirm("Effacer tout l'inventaire ?")) {
+            for (let name in data) {
+                data[name].qty = 0;
+                data[name].price = 0;
+                if(document.getElementById(`q-${name}`)) document.getElementById(`q-${name}`).innerText = "0";
+                if(document.getElementById(`p-${name}`)) document.getElementById(`p-${name}`).value = "";
+            }
+            calculateTotal();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+    }
+
     function filterItems() {
-        let query = document.getElementById('search').value.toLowerCase();
-        let rows = document.getElementsByClassName('item-row');
-        Array.from(rows).forEach(row => {
-            let name = row.querySelector('.item-name').innerText.toLowerCase();
-            row.style.display = name.includes(query) ? 'flex' : 'none';
+        let q = document.getElementById('search').value.toLowerCase();
+        let cards = document.getElementsByClassName('item-card');
+        Array.from(cards).forEach(card => {
+            let name = card.querySelector('.item-name').innerText.toLowerCase();
+            card.style.display = name.includes(q) ? 'flex' : 'none';
         });
     }
 
     function share(type) {
-        let text = type === 'all' ? "🛒 RECAPITULATIF TOTAL\n\n" : "💰 LISTE DES PRIX\n\n";
+        let text = type === 'all' ? "🛒 MON INVENTAIRE\n" : "💰 TARIFS DU JOUR\n";
         let hasData = false;
         for (let item in data) {
             if (data[item].qty > 0 || data[item].price > 0) {
                 if (type === 'all' && data[item].qty > 0) {
                     let st = data[item].qty * data[item].price;
-                    text += `* ${item} : ${data[item].qty} x ${data[item].price}€ = ${st.toFixed(2)}€\n`;
+                    text += `\n• ${item} : ${data[item].qty} x ${data[item].price}€ = ${st.toFixed(2)}€`;
                     hasData = true;
                 } else if (type === 'prices' && data[item].price > 0) {
-                    text += `* ${item} : ${data[item].price}€\n`;
+                    text += `\n• ${item} : ${data[item].price}€`;
                     hasData = true;
                 }
             }
         }
-        if (type === 'all') text += `\nTOTAL GLOBAL : ${document.getElementById('grand-total').innerText} €`;
+        if (type === 'all') text += `\n\n💵 TOTAL : ${document.getElementById('grand-total').innerText} €`;
         if (!hasData) return alert("Rien à partager !");
         
         if (navigator.share) {
-            navigator.share({ title: 'Mon Inventaire', text: text });
+            navigator.share({ title: 'Inventaire', text: text });
         } else {
-            alert("Texte généré :\n\n" + text);
+            navigator.clipboard.writeText(text);
+            alert("Copié dans le presse-papier !");
         }
     }
 
