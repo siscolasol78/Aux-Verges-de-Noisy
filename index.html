@@ -9,34 +9,29 @@
             --primary: #2c3e50;
             --accent: #27ae60;
             --bg: #f4f7f6;
+            --danger: #e74c3c;
         }
         body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 15px; border-radius: 12px; shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .container { max-width: 600px; margin: auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h1 { text-align: center; color: var(--primary); font-size: 1.5rem; }
         
-        .search-box { width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .header-tools { display: flex; gap: 10px; margin-bottom: 20px; }
+        .search-box { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        .btn-clear-all { background: var(--danger); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        .item-row { 
-            display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid #eee;
-        }
+        .item-row { display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid #eee; }
         .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .item-name { font-style: italic; font-weight: bold; color: var(--primary); }
         
         .controls { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
-        button { 
-            border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;
-            background: #e0e0e0; transition: 0.2s;
-        }
+        button { border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; background: #e0e0e0; transition: 0.2s; }
         button:active { transform: scale(0.95); }
         .btn-qty { background: var(--accent); color: white; font-weight: bold; }
         .btn-reset { background: #e74c3c; color: white; padding: 5px 8px; font-size: 0.8rem; }
         
         .price-input { width: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; text-align: center; }
         
-        .totals-bar { 
-            position: sticky; bottom: 0; background: var(--primary); color: white; 
-            padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center;
-        }
+        .totals-bar { position: sticky; bottom: 0; background: var(--primary); color: white; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: center; }
         .share-btns { display: flex; gap: 10px; margin-top: 10px; justify-content: center; }
         .btn-share { background: #3498db; color: white; padding: 10px 20px; border-radius: 20px; }
         
@@ -47,7 +42,11 @@
 
 <div class="container">
     <h1>📝 Liste & Comptage</h1>
-    <input type="text" id="search" class="search-box" placeholder="Rechercher un article..." onkeyup="filterItems()">
+    
+    <div class="header-tools">
+        <input type="text" id="search" class="search-box" placeholder="Rechercher..." onkeyup="filterItems()">
+        <button class="btn-clear-all" onclick="resetEverything()">TOUT EFFACER</button>
+    </div>
     
     <div id="item-list"></div>
 
@@ -77,7 +76,7 @@
             row.innerHTML = `
                 <div class="item-header">
                     <span class="item-name">${name}</span>
-                    <button class="btn-reset" onclick="updateQty('${name}', 0, true)">Reset</button>
+                    <button class="btn-reset" onclick="updateQty('${name}', 0, true)">Reset Qty</button>
                 </div>
                 <div class="controls">
                     <button class="btn-qty" onclick="updateQty('${name}', 1)">+1</button>
@@ -87,7 +86,7 @@
                     <button onclick="updateQty('${name}', 4)">+4</button>
                     <button onclick="updateQty('${name}', 5)">+5</button>
                     <span class="qty-display" id="qty-${name}">0</span>
-                    <input type="number" step="0.01" class="price-input" placeholder="Prix €" oninput="updatePrice('${name}', this.value)">
+                    <input type="number" step="0.01" class="price-input" id="price-${name}" placeholder="Prix €" oninput="updatePrice('${name}', this.value)">
                 </div>
             `;
             listEl.appendChild(row);
@@ -104,6 +103,18 @@
     function updatePrice(name, val) {
         data[name].price = parseFloat(val) || 0;
         calculateTotal();
+    }
+
+    function resetEverything() {
+        if(confirm("Voulez-vous vraiment remettre à zéro toutes les quantités et tous les prix ?")) {
+            for (let name in data) {
+                data[name].qty = 0;
+                data[name].price = 0;
+                document.getElementById(`qty-${name}`).innerText = "0";
+                document.getElementById(`price-${name}`).value = "";
+            }
+            calculateTotal();
+        }
     }
 
     function calculateTotal() {
@@ -126,7 +137,6 @@
     function share(type) {
         let text = type === 'all' ? "🛒 RECAPITULATIF TOTAL\n\n" : "💰 LISTE DES PRIX\n\n";
         let hasData = false;
-
         for (let item in data) {
             if (data[item].qty > 0 || data[item].price > 0) {
                 if (type === 'all' && data[item].qty > 0) {
@@ -139,15 +149,13 @@
                 }
             }
         }
-
         if (type === 'all') text += `\nTOTAL GLOBAL : ${document.getElementById('grand-total').innerText} €`;
-
         if (!hasData) return alert("Rien à partager !");
-
+        
         if (navigator.share) {
             navigator.share({ title: 'Mon Inventaire', text: text });
         } else {
-            alert("Copié dans le presse-papier :\n\n" + text);
+            alert("Texte généré :\n\n" + text);
         }
     }
 
